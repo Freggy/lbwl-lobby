@@ -1,0 +1,7 @@
+name: Lobby
+author: freggy
+version: 0.1.0
+main: dev.freggy.lobby.LobbyPlugin
+api-version: "1.13"
+commands:
+  lol:
