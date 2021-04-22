@@ -4,6 +4,7 @@ import com.google.common.io.ByteStreams
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material
+import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerInteractEvent
@@ -33,15 +34,20 @@ class LobbyPlugin : JavaPlugin(), Listener {
         spawn.yaw = -90F
         spawn.pitch = 0F
 
-        val item = ItemStack(Material.DIAMOND)
+        giveItem(event.player, Material.DIAMOND,"§eFlash §r§7§o<Rechtsklick>", 3)
+        giveItem(event.player, Material.MAGMA_CREAM,"§eTryJump §r§7§o<Rechtsklick>", 5)
+
+        event.player.teleport(spawn)
+        event.joinMessage = null
+    }
+
+    fun giveItem(player: Player, material: Material, name: String, slot: Int) {
+        val item = ItemStack(material)
         val meta = item.itemMeta
-        meta.displayName = "§eFlash §r§7§o<Rechtsklick>"
+        meta.displayName = name
         item.itemMeta = meta
 
-        event.player.inventory.setItem(4, item)
-        event.player.teleport(spawn)
-
-        event.joinMessage = null
+        player.inventory.setItem(slot, item)
     }
 
     @EventHandler
@@ -51,13 +57,25 @@ class LobbyPlugin : JavaPlugin(), Listener {
 
     @EventHandler
     private fun onPlayerInteract(event: PlayerInteractEvent) {
-        if (event.player.itemInHand.type != Material.DIAMOND) return
+        if (event.player.itemInHand.type == Material.DIAMOND) {
+            val out = ByteStreams.newDataOutput()
+            out.writeUTF("ConnectOther")
+            out.writeUTF(event.player.name)
+            out.writeUTF("flash01")
 
-        val out = ByteStreams.newDataOutput()
-        out.writeUTF("ConnectOther")
-        out.writeUTF(event.player.name)
-        out.writeUTF("flash01")
+            event.player.sendPluginMessage(this, "BungeeCord", out.toByteArray())
+            return
+        }
 
-        event.player.sendPluginMessage(this, "BungeeCord", out.toByteArray())
+        if (event.player.itemInHand.type == Material.MAGMA_CREAM) {
+            val out = ByteStreams.newDataOutput()
+            out.writeUTF("ConnectOther")
+            out.writeUTF(event.player.name)
+            out.writeUTF("tryjump01")
+
+            event.player.sendPluginMessage(this, "BungeeCord", out.toByteArray())
+            return
+        }
+
     }
 }
